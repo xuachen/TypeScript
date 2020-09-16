@@ -1204,7 +1204,7 @@ interface Array<T> { length: number; [n: number]: T; }`
 
     function baselineOutputs(baseline: string[], output: readonly string[], start: number, end = output.length) {
         for (let i = start; i < end; i++) {
-            baseline.push(output[i].replace(/Elapsed::\s[0-9]+ms/g, "Elapsed:: *ms"));
+            baseline.push(output[i].replace(/Elapsed::\s[0-9]+(?:\.\d+)?ms/g, "Elapsed:: *ms"));
         }
     }
 

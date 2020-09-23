@@ -458,6 +458,8 @@ namespace ts {
 
         getSmartSelectionRange(fileName: string, position: number): SelectionRange;
 
+        getMonikerAtPosition(fileName: string, position: number): string | undefined;
+
         getDefinitionAtPosition(fileName: string, position: number): readonly DefinitionInfo[] | undefined;
         getDefinitionAndBoundSpan(fileName: string, position: number): DefinitionInfoAndBoundSpan | undefined;
         getTypeDefinitionAtPosition(fileName: string, position: number): readonly DefinitionInfo[] | undefined;

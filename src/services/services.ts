@@ -1630,6 +1630,12 @@ namespace ts {
             }
         }
 
+        /// Get symbol moniker
+        function getMonikerAtPosition(fileName: string, position: number): string | undefined {
+            synchronizeHostData();
+            return GetMoniker.GetMonikerAtPosition(program, getValidSourceFile(fileName), position);
+        }
+
         /// Goto definition
         function getDefinitionAtPosition(fileName: string, position: number): readonly DefinitionInfo[] | undefined {
             synchronizeHostData();
@@ -2506,6 +2512,7 @@ namespace ts {
             getCompletionEntrySymbol,
             getSignatureHelpItems,
             getQuickInfoAtPosition,
+            getMonikerAtPosition,
             getDefinitionAtPosition,
             getDefinitionAndBoundSpan,
             getImplementationAtPosition,

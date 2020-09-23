@@ -21,6 +21,7 @@
         "findAllReferences.ts",
         "callHierarchy.ts",
         "getEditsForFileRename.ts",
+        "getMoniker.ts",
         "goToDefinition.ts",
         "jsDoc.ts",
         "navigateTo.ts",

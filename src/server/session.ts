@@ -1286,6 +1286,13 @@ namespace ts.server {
                 fileSpan;
         }
 
+        private getMoniker(args: protocol.FileLocationRequestArgs): string  {
+            const { file, project } = this.getFileAndProject(args);
+            const position = this.getPositionInFile(args, file);
+            const moniker = project.getLanguageService().getMonikerAtPosition(file, position);
+            return moniker ?? "";
+        }
+
         private getTypeDefinition(args: protocol.FileLocationRequestArgs): readonly protocol.FileSpanWithContext[] {
             const { file, project } = this.getFileAndProject(args);
             const position = this.getPositionInFile(args, file);
@@ -2562,6 +2569,9 @@ namespace ts.server {
             },
             [CommandNames.EmitOutput]: (request: protocol.EmitOutputRequest) => {
                 return this.requiredResponse(this.getEmitOutput(request.arguments));
+            },
+            [CommandNames.Moniker]: (request: protocol.FileLocationRequest) => {
+                return this.requiredResponse(this.getMoniker(request.arguments));
             },
             [CommandNames.TypeDefinition]: (request: protocol.FileLocationRequest) => {
                 return this.requiredResponse(this.getTypeDefinition(request.arguments));

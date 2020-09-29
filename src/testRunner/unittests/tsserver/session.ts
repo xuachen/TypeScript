@@ -217,6 +217,7 @@ namespace ts.server {
                 CommandNames.SemanticDiagnosticsSync,
                 CommandNames.SyntacticDiagnosticsSync,
                 CommandNames.SuggestionDiagnosticsSync,
+                CommandNames.Moniker,
                 CommandNames.NavBar,
                 CommandNames.NavBarFull,
                 CommandNames.Navto,

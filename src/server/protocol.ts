@@ -50,6 +50,7 @@ namespace ts.server.protocol {
         SemanticDiagnosticsSync = "semanticDiagnosticsSync",
         SyntacticDiagnosticsSync = "syntacticDiagnosticsSync",
         SuggestionDiagnosticsSync = "suggestionDiagnosticsSync",
+        Moniker = "moniker",
         NavBar = "navbar",
         /* @internal */
         NavBarFull = "navbar-full",
@@ -899,6 +900,15 @@ namespace ts.server.protocol {
     }
 
     /**
+     * Get moniker request; value of command field is
+     * "moniker". Return response giving the unique identifier string
+     * of the symbol found in file at location line, col.
+     */
+    export interface MonikerRequest extends FileLocationRequest {
+        command: CommandTypes.Moniker;
+    }
+
+    /**
      * Go to type request; value of command field is
      * "typeDefinition". Return response giving the file locations that
      * define the type for the symbol found in file at location line, col.
@@ -975,6 +985,13 @@ namespace ts.server.protocol {
 
     /** @deprecated Use `DefinitionInfoAndBoundSpanResponse` instead. */
     export type DefinitionInfoAndBoundSpanReponse = DefinitionInfoAndBoundSpanResponse;
+
+    /**
+     * Moniker response message.  Gives a unique identifier string for the requested symbol.
+     */
+    export interface MonikerResponse extends Response {
+        body?: string;
+    }
 
     /**
      * Definition response message.  Gives text range for definition.

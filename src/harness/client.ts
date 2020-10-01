@@ -277,6 +277,14 @@ namespace ts.server {
             return response.body!.map(entry => this.convertCodeEditsToTextChange(fileName, entry)); // TODO: GH#18217
         }
 
+        getMonikerAtPosition(fileName: string, position: number): string | undefined {
+            const args: protocol.FileLocationRequestArgs = this.createFileLocationRequestArgs(fileName, position);
+
+            const request = this.processRequest<protocol.MonikerRequest>(CommandNames.Moniker, args);
+            const response = this.processResponse<protocol.MonikerResponse>(request);
+            return response.body;
+        }
+
         getDefinitionAtPosition(fileName: string, position: number): DefinitionInfo[] {
             const args: protocol.FileLocationRequestArgs = this.createFileLocationRequestArgs(fileName, position);
 

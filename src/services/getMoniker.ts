@@ -67,15 +67,11 @@ namespace ts.GetMoniker {
             });
         }
         let hashInput = "";
-        //let hash = crypto.createHash('md5');
         if ((symbol.flags & ts.SymbolFlags.Transient) !== 0) {
             hashInput += JSON.stringify({ trans: true }, undefined, 0);
-            //hash.update(JSON.stringify({ trans: true }, undefined, 0));
         }
         hashInput += JSON.stringify(fragments, undefined, 0);
-        result = sys.createHash?(hashInput) : undefined;
-        //hash.update(JSON.stringify(fragments, undefined, 0));
-        //result = hash.digest('base64');
+        result = sys.createMD5Hash!(hashInput);
         (symbol as InternalSymbol).__symbol__data__key__ = result;
         return result;
     }

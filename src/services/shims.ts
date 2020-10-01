@@ -173,6 +173,12 @@ namespace ts {
         findRenameLocations(fileName: string, position: number, findInStrings: boolean, findInComments: boolean, providePrefixAndSuffixTextForRename?: boolean): string;
 
         /**
+         * Returns a string for the moniker value.
+         * Or undefined value if no moniker can be found.
+         */
+        getMonikerAtPosition(fileName: string, position: number): string;
+
+        /**
          * Returns a JSON-encoded value of the type:
          * { fileName: string; textSpan: { start: number; length: number}; kind: string; name: string; containerKind: string; containerName: string }
          *
@@ -794,6 +800,19 @@ namespace ts {
             return this.forwardJSONCall(
                 `getSignatureHelpItems('${fileName}', ${position})`,
                 () => this.languageService.getSignatureHelpItems(fileName, position, options)
+            );
+        }
+
+        /// GET MONIKER
+
+        /**
+         * Computes the unique moniker value for the symbol
+         * at the requested position.
+         */
+        public getMonikerAtPosition(fileName: string, position: number): string {
+            return this.forwardJSONCall(
+                `getMonikerAtPosition('${fileName}', ${position})`,
+                () => this.languageService.getMonikerAtPosition(fileName, position)
             );
         }
 

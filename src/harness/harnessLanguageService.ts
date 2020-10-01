@@ -519,6 +519,9 @@ namespace Harness.LanguageService {
         findReferences(fileName: string, position: number): ts.ReferencedSymbol[] {
             return unwrapJSONCallResult(this.shim.findReferences(fileName, position));
         }
+        getMonikerAtPosition(fileName: string, position: number): string {
+            return unwrapJSONCallResult(this.shim.getMonikerAtPosition(fileName, position));
+        }
         getOccurrencesAtPosition(fileName: string, position: number): ts.ReferenceEntry[] {
             return unwrapJSONCallResult(this.shim.getOccurrencesAtPosition(fileName, position));
         }

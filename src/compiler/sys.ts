@@ -1076,6 +1076,7 @@ namespace ts {
         createHash?(data: string): string;
         /** This must be cryptographically secure. Only implement this method using `crypto.createHash("sha256")`. */
         createSHA256Hash?(data: string): string;
+        createMD5Hash?(data: string): string;
         getMemoryUsage?(): number;
         exit(exitCode?: number): void;
         /*@internal*/ enableCPUProfiler?(path: string, continuation: () => void): boolean;
@@ -1227,6 +1228,7 @@ namespace ts {
                 deleteFile,
                 createHash: _crypto ? createSHA256Hash : generateDjb2Hash,
                 createSHA256Hash: _crypto ? createSHA256Hash : undefined,
+                createMD5Hash: _crypto ? createMD5Hash : undefined,
                 getMemoryUsage() {
                     if (global.gc) {
                         global.gc();
@@ -1735,6 +1737,12 @@ namespace ts {
                 const hash = _crypto!.createHash("sha256");
                 hash.update(data);
                 return hash.digest("hex");
+            }
+
+            function createMD5Hash(data: string): string {
+                const hash = _crypto!.createHash('md5');
+                hash.update(data);
+                return hash.digest("base64");
             }
         }
 

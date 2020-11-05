@@ -699,6 +699,16 @@ namespace FourSlash {
                 this.languageService.getTypeDefinitionAtPosition(this.activeFile.fileName, this.currentCaretPosition));
         }
 
+        public verifyGetMonikerAtCaret(expected: string) {
+            const actual = this.languageService.getMonikerAtPosition(this.activeFile.fileName, this.currentCaretPosition);
+            if (actual == undefined) {
+                this.raiseError(`GetMoniker returned no result - expected to get ${expected}`);
+            }
+            else if (actual !== expected) {
+                this.raiseError(displayExpectedAndActualString(expected, actual));
+            }
+        }
+
         private verifyGoToX(arg0: any, endMarkerNames: ArrayOrSingle<string> | undefined, getDefs: () => readonly ts.DefinitionInfo[] | ts.DefinitionInfoAndBoundSpan | undefined) {
             if (endMarkerNames) {
                 this.verifyGoToXPlain(arg0, endMarkerNames, getDefs);

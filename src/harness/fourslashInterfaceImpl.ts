@@ -316,6 +316,10 @@ namespace FourSlashInterface {
             this.state.verifyGoToDefinitionName(name, containerName);
         }
 
+        public getMonikerAtCaret(expected: string) {
+            this.state.verifyGetMonikerAtCaret(expected);
+        }
+
         public verifyGetEmitOutputForCurrentFile(expected: string): void {
             this.state.verifyGetEmitOutputForCurrentFile(expected);
         }

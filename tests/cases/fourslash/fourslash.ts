@@ -287,6 +287,7 @@ declare namespace FourSlashInterface {
         goToDefinitionForMarkers(...markerNames: string[]): void;
         goToType(startsAndEnds: { [startMarkerName: string]: ArrayOrSingle<string> }): void;
         goToType(startMarkerNames: ArrayOrSingle<string>, endMarkerNames: ArrayOrSingle<string>): void;
+        getMonikerAtCaret(expectedMoniker: string): void;
         verifyGetEmitOutputForCurrentFile(expected: string): void;
         verifyGetEmitOutputContentsForCurrentFile(expected: ts.OutputFile[]): void;
         baselineFindAllReferences(markerName: string): void;

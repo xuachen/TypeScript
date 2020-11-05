@@ -7,4 +7,4 @@
 ////}
 
 goTo.marker("1")
-verify.getMonikerAtCaret(`index:MyCoolClass.sum`)
+verify.getMonikerAtCaret(`index:MyClass.sum`)

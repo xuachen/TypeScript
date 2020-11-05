@@ -16,7 +16,7 @@ namespace ts.GetMoniker {
 		const moduleSystem = Utilities.getModuleSystemKind(declarationSourceFiles, typeChecker);
 		const exportPath = Symbols.getExportPath(symbol, moduleSystem, typeChecker);
 
-		const monikerIdentifer = Utilities.getMonikerIdentifier(Symbols.isSourceFile(symbol), moduleSystem, exportPath);
+		const monikerIdentifer = Utilities.getMonikerIdentifier(declarationSourceFiles, Symbols.isSourceFile(symbol), moduleSystem, exportPath);
         return monikerIdentifer;
     }
 
@@ -72,25 +72,56 @@ namespace ts.GetMoniker {
 			return ModuleSystemKind.unknown;
 		}
 
-		public static getMonikerIdentifier(isSourceFile: boolean, moduleSystem: ModuleSystemKind | undefined, exportPath: string | undefined): string | undefined {
+		public static createMonikerIdentifier(path: string, symbol: string | undefined): string;
+		public static createMonikerIdentifier(path: string | undefined, symbol: string): string;
+		public static createMonikerIdentifier(path: string | undefined, symbol: string | undefined): string {
+			if (path === undefined) {
+				if (symbol === undefined || symbol.length === 0) {
+					throw new Error(`Either path or symbol must be provided.`);
+				}
+				return `:${symbol}`;
+			}
+			if (symbol === undefined || symbol.length === 0) {
+				return `${path.replace(/\:/g, '::')}:`;
+			}
+			return `${path.replace(/\:/g, '::')}:${symbol}`;
+		}	
+
+		public static getMonikerIdentifier(sourceFiles: ts.SourceFile[] | undefined, isSourceFile: boolean, moduleSystem: ModuleSystemKind | undefined, exportPath: string | undefined): string | undefined {
+			const documentDatas: DocumentData[] | undefined = sourceFiles !== undefined
+				? sourceFiles.map((sourceFile) => this.getOrCreateDocumentData(sourceFile))
+				: undefined;
+
 			let monikerIdentifer: string | undefined;
 			const monikerFilePaths: Set<string> = new Set();
-	
+			let external: boolean | undefined;
+			if (documentDatas !== undefined) {
+				for (const data of documentDatas) {
+					if (data.monikerFilePath !== undefined) {
+						monikerFilePaths.add(data.monikerFilePath);
+					}
+					if (external === undefined) {
+						external = data.external;
+					} else {
+						external = external && data.external;
+					}
+				}
+			}
 			const monikerFilePath: string | undefined = monikerFilePaths.size === 0
 				? undefined
 				: monikerFilePaths.size === 1
 					? monikerFilePaths.values().next().value
 					: `[${arrayFrom(monikerFilePaths.values()).join(',')}]`;
-	
+
 			if (isSourceFile && monikerFilePath !== undefined) {
-				monikerIdentifer = createMonikerIdentifier(monikerFilePath, undefined);
+				monikerIdentifer = this.createMonikerIdentifier(monikerFilePath, undefined);
 			}
 			if (monikerIdentifer === undefined && exportPath !== undefined) {
 				if (moduleSystem === undefined || moduleSystem === ModuleSystemKind.global) {
-					monikerIdentifer = createMonikerIdentifier(undefined, exportPath);
+					monikerIdentifer = this.createMonikerIdentifier(undefined, exportPath);
 				}
 				if (monikerIdentifer === undefined && monikerFilePath !== undefined) {
-					monikerIdentifer = createMonikerIdentifier(monikerFilePath, exportPath);
+					monikerIdentifer = this.createMonikerIdentifier(monikerFilePath, exportPath);
 				}
 			}
 			return monikerIdentifer;
@@ -254,21 +285,6 @@ namespace ts.GetMoniker {
 		private static isExported(parent: ts.Symbol, symbol: ts.Symbol): boolean {
 			return parent.exports !== undefined && parent.exports.has(symbol.getName() as ts.__String);
 		}
-    }
-
-    export function createMonikerIdentifier(path: string, symbol: string | undefined): string;
-    export function createMonikerIdentifier(path: string | undefined, symbol: string): string;
-    export function createMonikerIdentifier(path: string | undefined, symbol: string | undefined): string {
-        if (path === undefined) {
-            if (symbol === undefined || symbol.length === 0) {
-                throw new Error(`Either path or symbol must be provided.`);
-            }
-            return `:${symbol}`;
-        }
-        if (symbol === undefined || symbol.length === 0) {
-            return `${path.replace(/\:/g, '::')}:`;
-        }
-        return `${path.replace(/\:/g, '::')}:${symbol}`;
     }
 
 	class TypeScriptSymbol

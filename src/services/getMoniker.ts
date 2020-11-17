@@ -33,6 +33,17 @@ namespace ts.GetMoniker {
 		global = 3
 	}
 
+	interface DocumentData { 
+		monikerFilePath: string | undefined 
+		external: boolean; 
+	 } 
+
+	interface InternalProgram extends ts.Program {
+		getCommonSourceDirectory(): string;
+		isSourceFileFromExternalLibrary(sourceFile: ts.SourceFile): boolean;
+		isSourceFileDefaultLibrary(sourceFile: ts.SourceFile): boolean;
+	}
+
 	class Utilities {
 		public static getDeclarationSourceFiles(symbol: ts.Symbol): ts.SourceFile[]  | undefined {
 			let sourceFiles = TypeScriptSymbol.getUniqueSourceFiles(symbol.getDeclarations());
@@ -72,6 +83,7 @@ namespace ts.GetMoniker {
 			return ModuleSystemKind.unknown;
 		}
 
+		// from typescript.ts
 		public static createMonikerIdentifier(path: string, symbol: string | undefined): string;
 		public static createMonikerIdentifier(path: string | undefined, symbol: string): string;
 		public static createMonikerIdentifier(path: string | undefined, symbol: string | undefined): string {
@@ -86,6 +98,105 @@ namespace ts.GetMoniker {
 			}
 			return `${path.replace(/\:/g, '::')}:${symbol}`;
 		}	
+
+		public static computeMonikerPath(from: string, to: string): string {
+			let result = getRelativePathFromDirectory(from, to, true);
+			if (ts.endsWith(result, '.d.ts')) {
+				return result.substring(0, result.length - 5);
+			} else if (ts.endsWith(result, '.ts') || ts.endsWith(result, '.js')) {
+				return result.substring(0, result.length - 3);
+			} else {
+				return result;
+			}
+		}
+
+		public static toOutLocation(path: string, rootDir: string, outDir: string): string {
+			if (!ts.startsWith(path, rootDir)) {
+				return path;
+			}
+			return `${outDir}${path.substr(rootDir.length)}`;
+		}
+
+		public static isSourceFileFromExternalLibrary(program: ts.Program, sourceFile: ts.SourceFile): boolean {
+			let interal: InternalProgram = program as InternalProgram;
+			if (typeof interal.isSourceFileFromExternalLibrary !== 'function') {
+				throw new Error(`Program is missing isSourceFileFromExternalLibrary`);
+			}
+			return interal.isSourceFileFromExternalLibrary(sourceFile);
+		}
+
+		// end from typescript.ts (tss)
+
+		// from utilities/path
+		public static isParent(parent: string, file: string): boolean {
+			if (parent.length === 0 || file.length === 0) {
+				throw new Error(`isParent require a parent and a file.`);
+			}
+			if (!ts.startsWith(file, parent)) {
+				return false;
+			}
+			if (parent[parent.length - 1] === '/') {
+				return true;
+			}
+		
+			if (file.charAt(parent.length) === '/' ) {
+				return true;
+			}
+		
+			return false;
+		}
+
+
+		// TODO: sourceRoot, projectRoot, outDir, dependentOutDirs
+		public static getOrCreateDocumentData(sourceFile: ts.SourceFile): DocumentData {
+			const isFromExternalLibrary = (sourceFile: ts.SourceFile): boolean => {
+				return this.isSourceFileFromExternalLibrary(this.program, sourceFile);
+			};
+	
+			const isFromProjectSources = (sourceFile: ts.SourceFile): boolean => {
+				const fileName = sourceFile.fileName;
+				return !sourceFile.isDeclarationFile || this.isParent(this.sourceRoot, fileName);
+			};
+	
+			const isFromDependentProject = (sourceFile: ts.SourceFile): boolean => {
+				if (!sourceFile.isDeclarationFile) {
+					return false;
+				}
+				const fileName = sourceFile.fileName;
+				for (let outDir of this.dependentOutDirs) {
+					if (ts.startsWith(fileName, outDir)) {
+						return true;
+					}
+				}
+				return false;
+			};
+	
+			const isFromProjectRoot = (sourceFile: ts.SourceFile): boolean => {
+				return this.isParent(this.projectRoot, sourceFile.fileName);
+			};
+
+			const fileName = sourceFile.fileName;
+			
+			let monikerPath: string | undefined;
+			let external: boolean = false;
+			if (isFromExternalLibrary(sourceFile)) {
+				external = true;
+				monikerPath = this.computeMonikerPath(this.projectRoot, fileName);
+			} else if (isFromProjectSources(sourceFile)) {
+				monikerPath = this.computeMonikerPath(this.projectRoot, this.toOutLocation(fileName, this.sourceRoot, this.outDir));
+			} else if (isFromDependentProject(sourceFile)) {
+				external = true;
+				monikerPath = this.computeMonikerPath(this.projectRoot, fileName);
+			} else if (isFromProjectRoot(sourceFile)) {
+				external = sourceFile.isDeclarationFile;
+				monikerPath = this.computeMonikerPath(this.projectRoot, fileName);
+			}
+
+			return {
+				monikerFilePath: monikerPath,
+				external: external,
+			};
+		}
 
 		public static getMonikerIdentifier(sourceFiles: ts.SourceFile[] | undefined, isSourceFile: boolean, moduleSystem: ModuleSystemKind | undefined, exportPath: string | undefined): string | undefined {
 			const documentDatas: DocumentData[] | undefined = sourceFiles !== undefined
